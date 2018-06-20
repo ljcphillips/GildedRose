@@ -9,117 +9,90 @@ class Item {
 class Shop {
   constructor(items=[]){
     this.items = items;
-    this.specialItems = ['Aged Brie','Backstage passes to a TAFKAL80ETC concert']
   }
 
-  // isSpecialItem(item){
-  //   var outcome = "unknown"
-  //   var results = []
-  //   this.specialItems.forEach(function(reference){
-  //     if (item.name === reference){
-  //       results.push(true)
-  //       }
-  //     else {
-  //       results.push(false)
-  //     }
-  //   });
-  //   if(results.includes(true) ){
-  //     outcome = true
-  //   }
-  //   else{
-  //     outcome = false
-  //   }
-  //   return outcome
-  // }
-
-  isNotAgedBrie(item){
-    if (item.name === "Aged Brie"){
-      return false
-    }
-    else{
-      return true
-    }
-  }
-  isNotBackstagePass(item){
-    if (item.name === "Backstage passes to a TAFKAL80ETC concert"){
-      return false
-    }
-    else{
-      return true
-    }
+  isSpecialItem(item){
+    return this.isAgedBrie(item) || this.isBackstagePass(item) || this.isSulfuras(item) || this.isConjured(item)
   }
 
-  isNotSulfuras(item){
-    if (item.name === 'Sulfuras, Hand of Ragnaros'){
-      return false
-    }
-    else{
-      return true
-    }
+  isAgedBrie(item){
+    return item.name === "Aged Brie"
+  }
+  isBackstagePass(item){
+    return item.name === "Backstage passes to a TAFKAL80ETC concert"
+  }
+
+  isSulfuras(item){
+     return item.name === 'Sulfuras, Hand of Ragnaros'
+  }
+
+  isConjured(item){
+     return item.name === 'Conjured Mana Cake'
+  }
+
+  isQualityGreaterThanZero(item){
+    return item.quality > 0
   }
 
   decreaseQuality(item){
+    if(this.isQualityGreaterThanZero(item))
      item.quality--
+     if(item.sellIn <= 0){
+       item.quality--
+     }
   }
   increaseQuality(item){
     if(item.quality < 50){
        item.quality++
      }
   }
+  updateQualityAgedBrie(item){
+    if(this.isAgedBrie(item)){
+      this.increaseQuality(item)
+      this.decreaseSellIn(item)
+    }
+  }
+
+  updateQualityConjured(item){
+    if(this.isConjured(item)){
+      this.decreaseQuality(item)
+      this.decreaseQuality(item)
+      this.decreaseSellIn(item)
+    }
+  }
+  updateQualityBackStagePass(item){
+    var days = [5,10,10000]
+    if(this.isBackstagePass(item)){
+      if(backstagePass.sellIn <=0){
+        backstagePass.quality = 0
+      }
+      else {
+        days.forEach(day => {
+          if (backstagePass.sellIn <= day){
+            this.increaseQuality(item)
+          }
+        });
+      }
+      this.decreaseSellIn(item);
+    }
+  }
 
   decreaseSellIn(item){
      item.sellIn--
   }
-  increaseSellIn(item){
-     item.sellIn++
-  }
-  isQualityGreaterThanZero(item){
-    if (item.quality > 0){
-      return true
-    }
-    else{
-      return false
-    }
-  }
+
   updateQuality() {
     for (var i = 0; i < this.items.length; i++) {
-      if (this.isNotAgedBrie(this.items[i]) && this.isNotBackstagePass(this.items[i])) {
-        if (this.isQualityGreaterThanZero(this.items[i]) && this.isNotSulfuras(this.items[i])) {
-            this.decreaseQuality(this.items[i]);
-        }
-      } else {
-          this.increaseQuality(this.items[i]);
-          if (this.items[i].name == 'Backstage passes to a TAFKAL80ETC concert') {
-            if (this.items[i].sellIn < 11) {
-                this.increaseQuality(this.items[i]);
-            }
-            if (this.items[i].sellIn < 6) {
-                this.increaseQuality(this.items[i]);
-            }
-          }
+      if(this.isSpecialItem(this.items[i])){
+        this.updateQualityAgedBrie(this.items[i])
+        this.updateQualityBackStagePass(this.items[i])
+        this.updateQualityConjured(this.items[i])
       }
-      if (this.items[i].name != 'Sulfuras, Hand of Ragnaros') {
+      else{
+        this.decreaseQuality(this.items[i]);
         this.decreaseSellIn(this.items[i]);
       }
-      if (this.items[i].sellIn < 0) {
-        if (this.items[i].name != 'Aged Brie') {
-          if (this.items[i].name != 'Backstage passes to a TAFKAL80ETC concert') {
-            if (this.items[i].quality > 0) {
-              if (this.items[i].name != 'Sulfuras, Hand of Ragnaros') {
-                this.decreaseQuality(this.items[i]);
-              }
-            }
-          } else {
-            this.items[i].quality = this.items[i].quality - this.items[i].quality;
-          }
-        } else {
-          if (this.items[i].quality < 50) {
-            this.increaseQuality(this.items[i]);
-          }
-        }
-      }
     }
-
     return this.items;
   }
 }
